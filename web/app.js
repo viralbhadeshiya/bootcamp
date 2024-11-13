@@ -5,6 +5,10 @@ const pdf_url_base = './pdf/'
 const pdf_url_ext = '.pdf'
 const slide_link_height = 25;
 
+/* Button Names variables */
+SHOW_SOLUTION_BUTTON_TEXT = "Show Solution";
+HIDE_SOLUTION_BUTTON_TEXT = "Hide Solution";
+
 /* Global references and variables */
 let slide_list = [];
 let slide_id = -1;
@@ -122,7 +126,6 @@ function sidebar_category_onclick(e) {
 /* ========================================================================= *
  * Copy functionality
  * ========================================================================= */
-// Function to add copy button to each code block inside the iframe
 function addCopyButtonsInIframe() {
     let frame = document.querySelector('#slideFrame');
     if (!frame) {
@@ -183,6 +186,74 @@ function addCopyButtonsInIframe() {
 
 // Run addCopyButtonsInIframe after the main DOM is fully loaded
 document.addEventListener('DOMContentLoaded', addCopyButtonsInIframe);
+
+/* ========================================================================= *
+ * Hidden slides logic handeling
+ * ========================================================================= */
+function setupToggleButtons() {
+    const frame = document.querySelector('#slideFrame');
+
+    // Check if iframe exists and load content
+    if (frame) {
+        frame.addEventListener('load', () => {
+            const contentDoc = frame.contentDocument || frame.contentWindow.document;
+
+            // Select all toggle buttons and toggle-content sections in the iframe
+            const toggleButtons = contentDoc.querySelectorAll('.toggle-button');
+            const toggleContents = contentDoc.querySelectorAll('.toggle-content');
+
+            // Force initial hidden state for all toggle-content elements
+            toggleContents.forEach(content => {
+                content.style.display = 'none';  // Ensure they are hidden at the start
+            });
+
+            // Initialize each button's text to "Show Content" and add inline styles
+            toggleButtons.forEach(button => {
+                button.textContent = SHOW_SOLUTION_BUTTON_TEXT;
+
+                // Apply inline styles to the toggle button
+                button.style.cursor = 'pointer';
+                button.style.backgroundColor = '#007bff'; // Blue color
+                button.style.color = 'white';
+                button.style.padding = '10px';
+                button.style.border = 'none';
+                button.style.borderRadius = '5px';
+                button.style.fontSize = '16px';
+                button.style.marginTop = '10px';
+
+                // Hover effect
+                button.addEventListener('mouseover', () => {
+                    button.style.backgroundColor = '#0056b3'; // Darker blue on hover
+                });
+                button.addEventListener('mouseout', () => {
+                    button.style.backgroundColor = '#007bff'; // Original blue
+                });
+            });
+
+            // Add click event listener to each toggle button
+            toggleButtons.forEach((button, index) => {
+                button.addEventListener('click', () => {
+                    const content = toggleContents[index];
+                    if (content) {
+                        // Toggle the display of the content
+                        if (content.style.display === 'none') {
+                            content.style.display = 'block';
+                            button.textContent = HIDE_SOLUTION_BUTTON_TEXT;
+                        } else {
+                            content.style.display = 'none';
+                            button.textContent = SHOW_SOLUTION_BUTTON_TEXT;
+                        }
+                    }
+                });
+            });
+        });
+    } else {
+        console.error("Error: #slideFrame element not found.");
+    }
+}
+
+// Run setupToggleButtons after the main DOM is fully loaded
+document.addEventListener('DOMContentLoaded', setupToggleButtons);
 
 /* ========================================================================= *
  * Relative Link to Git Translation !!TEMPORARY!!
